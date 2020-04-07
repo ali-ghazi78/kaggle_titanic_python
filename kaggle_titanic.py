@@ -119,11 +119,11 @@ def predict(data , data2,param):
  
     pass
 def hp_optim(model,X,y):
-    n_estimators = range(50,700,12)
+    n_estimators = range(170,180,1)
     max_features = ['auto', 'sqrt']
-    max_depth = ([4,10,20,30,40,50,60,70,80,90,100,110])
-    min_samples_split = ([4,10,20,30,40,50,60,70,80,90,100,110])
-    min_samples_leaf = ([4,10,20,30,40,50,60,70,80,90,100,110])
+    max_depth = ([17,20,30,35,100])
+    min_samples_split = ([4,10,15])
+    min_samples_leaf = ([4,10,20])
     bootstrap = [True, False]
     random_grid = {'n_estimators': n_estimators,
                    'max_depth': max_depth,
@@ -132,14 +132,15 @@ def hp_optim(model,X,y):
                    'max_features': max_features , 
                    'bootstrap': bootstrap}
 
-    gridF = GridSearchCV(model, random_grid, cv = 5, verbose = 1, 
+    gridF = GridSearchCV(model, random_grid, cv = 3, verbose = 1, 
                           n_jobs = -1)
     X_train , X_test , y_train , y_test = train_test_split(X,y,train_size = .2,shuffle = True)
     gridF.fit(X_train ,y_train )
     print(gridF.best_params_) 
     predict = gridF.predict(X_test)
     acc = accuracy_score(y_test, predict)
-    
+    print(acc) 
+
     
     return gridF.best_params_
     pass    
