@@ -104,7 +104,7 @@ def predict(data , data2,param):
     np.random.seed(1)
     X_train , X_test , y_train, y_test = train_test_split(X,y,test_size = .2,shuffle = True)
     
-    model = RandomForestClassifier(random_state = 1 , **param)
+    model = RandomForestClassifier( **param)
 
     model.fit(X_train,y_train)
     predict  = model.predict(X_test)
@@ -118,48 +118,36 @@ def predict(data , data2,param):
     frame.to_csv("result.csv",index = False)
  
     pass
-@jit
 def hp_optim(model,X,y):
-    # Number of trees in random forest
-    n_estimators = range(100,300,10)
-    # Number of features to consider at every split
-    #max_features = ['auto', 'sqrt']
-    # Maximum number of levels in tree
-    max_depth = (range(4,100,1))
-    # Minimum number of samples required to split a node
-    min_samples_split = [2, 5, 10]
-    # Minimum number of samples required at each leaf node
-    min_samples_leaf = [1, 2, 4]
-    # Method of selecting samples for training each tree
+    n_estimators = range(50,700,12)
+    max_features = ['auto', 'sqrt']
+    max_depth = ([4,10,20,30,40,50,60,70,80,90,100,110])
+    min_samples_split = ([4,10,20,30,40,50,60,70,80,90,100,110])
+    min_samples_leaf = ([4,10,20,30,40,50,60,70,80,90,100,110])
     bootstrap = [True, False]
-    # Create the random grid
     random_grid = {'n_estimators': n_estimators,
                    'max_depth': max_depth,
                    'min_samples_split': min_samples_split,
                    'min_samples_leaf': min_samples_leaf,
+                   'max_features': max_features , 
                    'bootstrap': bootstrap}
-    #train_scoreNum, test_scoreNum = validation_curve(model, scoring="accuracy" ,cv=5,X=X, y=y, param_name = 'max_features', param_range=max_features)
-    #train_scoreNum = train_scoreNum.mean(axis = 1)
-    #test_scoreNum = test_scoreNum.mean(axis = 1)
-    
+
     gridF = GridSearchCV(model, random_grid, cv = 5, verbose = 1, 
                           n_jobs = -1)
-    X_train , X_test , y_train , y_test = train_test_split(X,y,train_size = .2)
-    gridF.fit(X_train,y_train)
+    X_train , X_test , y_train , y_test = train_test_split(X,y,train_size = .2,shuffle = True)
+    gridF.fit(X_train ,y_train )
     print(gridF.best_params_) 
-
-    #plt.plot(n_estimators,train_scoreNum,label = 'train' ) 
-    #plt.plot(n_estimators,test_scoreNum,label = 'test' ) 
-    #plt.legend()
+    predict = gridF.predict(X_test)
+    acc = accuracy_score(y_test, predict)
+    
+    
     return gridF.best_params_
     pass    
 
 
-
-best_param = {"n_estimators" : 190}
 data = data_pre_proccess(data)
 data2 = data_pre_proccess(data2)
-model = RandomForestClassifier(random_state=10,n_estimators = 190)
+model = RandomForestClassifier( )
 
 y = data["Survived"]
 X = data.drop("Survived" , axis= 1)
