@@ -29,8 +29,6 @@ def data_pre_proccess(data):
     data.drop("Pclass" , axis = 1)
     data = data.drop('PassengerId' , axis= 1 )
     data.drop("Ticket" , axis =1 ,inplace=True)
-    data.loc[data.Cabin.str.contains("na",na = True),"Cabin"] = "??"
-    data.drop("Cabin" , axis =1 ,inplace=True)
     
     title = {'Ms':'Miss',
                 'Countess':"Royalty",
@@ -67,20 +65,29 @@ def data_pre_proccess(data):
     data.Fare.fillna(data.Fare.mean(),inplace = True)
     
         
-    return data   
+    return do_sth_with_cabi(data)   
     
 def do_sth_with_cabi(data):
-    cabin_title = ['A','B','C','D','E','F','G','T','??']
-    global temp    
-    for c_t in cabin_title:
-        data[c_t] = (np.zeros(len(data)))
-        data[data['Cabin'].str.contains(c_t)] =   data.Cabin.str.extract('(\d+)')
-        temp = data.Cabin.str.extract('(\d+)')
-        
+    data.loc[data.Cabin.str.contains("na",na = True),"Cabin"] = "H"
+    cabin_title = {'A':"A",
+                   'B':'B',
+                   'C':'C',
+                   'D':'D',
+                   'E':'E',
+                   'F':'F',
+                   'G':'G',
+                   'H':'H',
+                   'T':'H'
+                   }
+    for key,val in cabin_title.items():
+        data.loc[data['Cabin'].str.contains(key,na = True),"Cabin"] =  val        
         pass
-    
+
+    temp = pd.get_dummies(data.Cabin)
+    data = pd.concat((temp,data),axis = 1)
+    data.loc[data.Cabin.str.len()>2,"Cabin"] =  "DDD"
+    data.drop("Cabin" , axis =1 ,inplace=True)
     return data    
-    
     
     pass
 
