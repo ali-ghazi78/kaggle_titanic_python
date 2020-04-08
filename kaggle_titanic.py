@@ -17,7 +17,10 @@ from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import validation_curve
 import time
 import seaborn as sn
+from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import cross_val_score
+
 #data["Indexes"]= data["Name"].str.find(sub) 
 
 
@@ -76,12 +79,15 @@ def data_pre_proccess(data):
     
   
     data = do_sth_with_cabi(data)   
-    data.drop("A",axis = 1 , inplace = True)
-    data.drop("G",axis = 1 , inplace = True)
-    data.drop("Q",axis = 1 , inplace = True)
-    data.drop("Royalty",axis = 1 , inplace = True)
-    data.drop("Officer",axis = 1 , inplace = True)
-    data.drop("F",axis = 1 , inplace = True)
+    #data.drop("A",axis = 1 , inplace = True)
+    #data.drop("G",axis = 1 , inplace = True)
+    #data.drop("Q",axis = 1 , inplace = True)
+    #data.drop("Royalty",axis = 1 , inplace = True)
+    #data.drop("Officer",axis = 1 , inplace = True)
+    #data.drop("F",axis = 1 , inplace = True)
+    #data.drop("Age",axis = 1 , inplace = True)
+    #data.drop("SibSp",axis = 1 , inplace = True)
+    #data.drop("Parch",axis = 1 , inplace = True)
     
     return data
 #@jit 
@@ -109,20 +115,20 @@ def do_sth_with_cabi(data):
     
     pass
 
-
-def predict(data , data2,param):                  
+def predict(data , data2,param={}):                  
     y = data["Survived"]
     X = data.drop("Survived" , axis= 1)
 
     np.random.seed(1)
     X_train , X_test , y_train, y_test = train_test_split(X,y,test_size = .2,shuffle = True)
     
-    model = RandomForestClassifier( **param)
-
+    model = svm.SVC(**param)
+    
     model.fit(X_train,y_train)
     predict  = model.predict(X_test)
     accuracy = accuracy_score(y_test, predict)
-    print(accuracy)
+    acc2 = cross_val_score(model, X,y).mean()
+    print(f"\n\nthe cross_val    :{acc2} \nthe accuracy on test :{accuracy}\n\n")
      
     
     frame = pd.DataFrame()
@@ -146,8 +152,11 @@ def hp_optim(model,X,y):
                    'min_samples_leaf': min_samples_leaf,
                    'max_features': max_features , 
                    'bootstrap': bootstrap}
-
-    gridF = GridSearchCV(model, random_grid, cv = 3, verbose = 1, 
+    random_grid_svm = {'gamma':np.arange(0.5,2,.1),
+                       'C' : np.arange(0.01,2,.1),
+                       'kernel': ['poly']  
+                    }
+    gridF = GridSearchCV(model, random_grid_svm, cv = 5, verbose = 1, 
                           n_jobs = -1)
     X_train , X_test , y_train , y_test = train_test_split(X,y,train_size = .2,shuffle = True)
     gridF.fit(X_train ,y_train )
@@ -163,12 +172,11 @@ def hp_optim(model,X,y):
 
 data = data_pre_proccess(data)
 data2 = data_pre_proccess(data2)
-model = RandomForestClassifier( )
+model = SVC("poly")
 
 
 y = data["Survived"]
 X = data.drop("Survived" , axis= 1)
-
 
 
 
@@ -183,26 +191,14 @@ fig2 , ax2 = plt.subplots()
 labels = pd.DataFrame()
 labels["label"] =   (corr_mat.columns)
 labels = labels["label"].apply(str)
-print(labels)
 corr_mat = corr_mat.Survived
 
 plt.xticks(rotation='vertical')
 ax2.bar(labels,corr_mat    )
-#sn.heatmap(corr_mat )/
-#plt.show()
 
-#param = {'bootstrap': True, 'max_depth': 6, 'min_samples_leaf': 1, 'min_samples_split': 5, 'n_estimators': 190}
+
 param = hp_optim(model , X,y)
 predict(data,data2,param)
 print(f"time:{time.time() - s_time}s")
-
-           
-              
-           
-
-#data = data_pre_proccess(data)
-#data2 = data_pre_proccess(data2)
-#data = do_sth_with_cabi(data )
-
 
 
