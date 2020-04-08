@@ -154,7 +154,7 @@ def hp_optim(model,X,y):
                    'bootstrap': bootstrap}
     random_grid_svm = {'gamma':np.arange(0.5,2,.1),
                        'C' : np.arange(0.01,2,.1),
-                       'kernel': ['poly']  
+                       'kernel': ['rbf' , "linear"]  
                     }
     gridF = GridSearchCV(model, random_grid_svm, cv = 5, verbose = 1, 
                           n_jobs = -1)
