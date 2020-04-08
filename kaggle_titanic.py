@@ -16,6 +16,7 @@ from sklearn import svm
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import validation_curve
 import time
+import seaborn as sn
 from sklearn.model_selection import GridSearchCV
 #data["Indexes"]= data["Name"].str.find(sub) 
 
@@ -56,9 +57,11 @@ def data_pre_proccess(data):
     temp2 = pd.get_dummies(data.Name)
     data = pd.concat([temp2 , data] , axis  = 1)
     data.drop("Name",axis =1 ,inplace =True )
-    
-    data.loc[data.Sex.str.contains("female") ,"Sex"] = 1
-    data.loc[data.Sex.str.contains("male",na = False) ,"Sex"] = 0
+    #data.loc[data.Sex.str.contains("female") ,"Sex"] = 1
+    #data.loc[data.Sex.str.contains("male",na = False) ,"Sex"] = 0
+    temp = pd.get_dummies(data.Sex)
+    data = pd.concat((temp,data),axis = 1)
+    data.drop("Sex",axis = 1,inplace = True)
     
     data.loc[data.Embarked.str.contains("na",na = False),"Embarked"] = "MISSING"
     temp = pd.get_dummies(data.Embarked)
@@ -68,8 +71,19 @@ def data_pre_proccess(data):
     data.Age.fillna(data.Age.mean(),inplace = True)
     data.Fare.fillna(data.Fare.mean(),inplace = True)
     
-        
-    return do_sth_with_cabi(data)   
+
+   # data.drop("Age",axis = 1,inplace = True)
+    
+  
+    data = do_sth_with_cabi(data)   
+    data.drop("A",axis = 1 , inplace = True)
+    data.drop("G",axis = 1 , inplace = True)
+    data.drop("Q",axis = 1 , inplace = True)
+    data.drop("Royalty",axis = 1 , inplace = True)
+    data.drop("Officer",axis = 1 , inplace = True)
+    data.drop("F",axis = 1 , inplace = True)
+    
+    return data
 #@jit 
 def do_sth_with_cabi(data):
     data.loc[data.Cabin.str.contains("na",na = True),"Cabin"] = "H"
@@ -96,7 +110,6 @@ def do_sth_with_cabi(data):
     pass
 
 
-#@jit
 def predict(data , data2,param):                  
     y = data["Survived"]
     X = data.drop("Survived" , axis= 1)
@@ -118,13 +131,15 @@ def predict(data , data2,param):
     frame.to_csv("result.csv",index = False)
  
     pass
+#
+#@jit
 def hp_optim(model,X,y):
-    n_estimators = range(170,180,1)
-    max_features = ['auto', 'sqrt']
-    max_depth = ([17,20,30,35,100])
-    min_samples_split = ([4,10,15])
-    min_samples_leaf = ([4,10,20])
-    bootstrap = [True, False]
+    n_estimators = range(200,240,10)
+    max_features = ['auto']#, 'sqrt']
+    max_depth = ([80,90,100,110,120,70])
+    min_samples_split = ([100,50,10,8,25])
+    min_samples_leaf = ([2])
+    bootstrap = [True]#, False]
     random_grid = {'n_estimators': n_estimators,
                    'max_depth': max_depth,
                    'min_samples_split': min_samples_split,
@@ -150,15 +165,38 @@ data = data_pre_proccess(data)
 data2 = data_pre_proccess(data2)
 model = RandomForestClassifier( )
 
+
 y = data["Survived"]
 X = data.drop("Survived" , axis= 1)
+
+
+
+
+fig , ax = plt.subplots( )
+corr_mat = pd.concat((X,y),axis = 1 )
+corr_mat = data.corr("pearson" )
+sn.heatmap( corr_mat,ax = ax,annot = False ,xticklabels=True ,yticklabels=True)
+
+fig2 , ax2 = plt.subplots()
+
+
+labels = pd.DataFrame()
+labels["label"] =   (corr_mat.columns)
+labels = labels["label"].apply(str)
+print(labels)
+corr_mat = corr_mat.Survived
+
+plt.xticks(rotation='vertical')
+ax2.bar(labels,corr_mat    )
+#sn.heatmap(corr_mat )/
+#plt.show()
 
 #param = {'bootstrap': True, 'max_depth': 6, 'min_samples_leaf': 1, 'min_samples_split': 5, 'n_estimators': 190}
 param = hp_optim(model , X,y)
 predict(data,data2,param)
 print(f"time:{time.time() - s_time}s")
 
-              
+           
               
            
 
