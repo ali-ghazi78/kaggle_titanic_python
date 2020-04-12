@@ -126,7 +126,7 @@ def predict(data, data2):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.2, shuffle=True)
 
     model = Sequential()
-    model.add(Dense(kernel_initializer="uniform", units=19, activation="relu", input_dim=28))
+    model.add(Dense(kernel_initializer="uniform", units=14, activation="relu", input_dim=28))
     model.add(Dense(kernel_initializer="uniform", units=14, activation="relu"))
     model.add(Dense(kernel_initializer="uniform", units=1, activation="sigmoid"))
     model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
