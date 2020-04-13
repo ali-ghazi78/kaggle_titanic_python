@@ -203,7 +203,7 @@ X = data.drop("Survived", axis=1)
 fig, ax = plt.subplots()
 corr_mat = pd.concat((X, y), axis=1)
 corr_mat = data.corr("pearson")
-sn.heatmap(corr_mat, ax=ax, annot=False, xticklabels=True, yticklabels=True)
+sn.heatmap(corr_mat, ax=ax, annot=False, xticklabels=True, yticklabels=True,fmt="g")
 plt.show()
 
 fig2, ax2 = plt.subplots()
